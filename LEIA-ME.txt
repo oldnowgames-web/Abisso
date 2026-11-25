@@ -1,0 +1,61 @@
+ABISSO — PACOTE COM MÚSICAS
+
+COMO ABRIR
+1. Extraia o ZIP inteiro para uma pasta.
+2. Não mova o arquivo HTML para fora da pasta.
+3. Abra ABISSO_com_musicas.html no Chrome, Edge ou Firefox.
+
+MÚSICAS
+- Ondas 2 a 12: MP3s enviados e incluídos na pasta audio/.
+- Onda 1, abertura, menu, descida, upgrades, treino, modo infinito, derrota e vitória: música sintetizada em tempo real com Web Audio.
+- Onda 6 e onda 12 usam os MP3s enviados para as batalhas da Rainha Medusa e do Leviatã.
+
+CONTROLES
+- O volume da música foi aumentado consideravelmente e continua acompanhando os controles Música e volume geral do jogo. Para deixar ainda mais alto, coloque Música e Geral no máximo nas configurações.
+- O botão de áudio e a tecla M continuam silenciando o jogo.
+- As faixas MP3 tocam em loop; as mudanças de onda fazem uma transição gradual.
+
+IMPORTANTE
+Mantenha a pasta audio/ ao lado do HTML para que as faixas MP3 sejam encontradas.
+
+ONDAS MAIORES (nova versão)
+- Criaturas por onda: multiplicador 10 -> 11 (WAVE_SIZE_MULTIPLIER).
+- Duração mínima: onda 1 = 2:15, +10 s por onda, até 4:30 (WAVE_BASE_DURATION, WAVE_DURATION_STEP, WAVE_MAX_DURATION).
+- Surgimento das criaturas ajustado para durar a onda inteira; eventos abissais agora ocorrem a cada ~40 s.
+- O HUD mostra o tempo restante da onda e a barra avança pelo tempo.
+
+ARQUIVOS SEPARADOS
+- ABISSO_com_musicas.html (estrutura), abisso.css (estilo), abisso.js (jogo). Mantenha os três na mesma pasta, junto de audio/.
+
+VIDAS (modo campanha)
+- 3 vidas. Ao perder uma, a onda atual recomeça com a vida cheia. Perdeu as 3: game over e o mergulho recomeça da onda 1.
+- Treino e modo infinito não usam vidas.
+
+CÂMERA
+- Zoom aproximado (~25% mais perto que o original): personagem e inimigos maiores na tela. Ajuste em resize(), linha com "zoom=clamp(".
+
+ERRO NA TELA
+- A faixa de erro vermelha na parte de baixo foi removida. Erros agora vão só para o console do navegador (F12), sem aparecer no jogo.
+
+MODO 2 JOGADORES (COOPERATIVO ONLINE · PeerJS)
+Como jogar
+1. Os dois abrem o jogo (internet necessária) e escolhem "2 JOGADORES" no menu.
+2. Um clica em CRIAR SALA e passa o código de 5 letras ao outro (esse jogador é o HOST).
+3. O outro digita o código em ENTRAR NA SALA.
+4. Quando aparecer "PARCEIRO CONECTADO", o host clica em INICIAR MERGULHO. Modo (campanha/infinito) e dificuldade são os escolhidos no menu do host.
+Regras do co-op
+- Mesma arena e mesmas ondas, com mais criaturas (x1.5) e chefes mais resistentes (x1.7).
+- 3 vidas da dupla. Se um jogador cair (0 células), o outro revive ficando perto por 3 segundos. Se os dois caírem, perdem uma vida e a onda recomeça; sem vidas = game over e tudo recomeça da onda 1 (o host reinicia).
+- Entre as ondas cada jogador escolhe a própria melhoria; a próxima onda começa quando os dois escolherem.
+- Pontos, plâncton, combo e florada são compartilhados. J1 = ciano (host), J2 = roxo (convidado).
+- ESC no co-op abre um menu (o jogo NÃO pausa, pois o parceiro continua jogando).
+- Se o parceiro desconectar, o host segue sozinho; o convidado volta ao menu.
+Como funciona (técnico)
+- O host roda toda a simulação e envia o estado ~20x por segundo; o convidado envia os controles e desenha o que recebe (com predição do próprio movimento).
+- Arquivos: coop-net.js (camada PeerJS: sala, código, mensagens, latência), vendor/peerjs.min.js (biblioteca PeerJS 1.5.4, local; se faltar, tenta baixar do unpkg).
+- Usa o servidor público gratuito do PeerJS só para o "aperto de mãos". Para usar o seu próprio servidor/TURN, defina antes dos scripts:
+  <script>window.ABISSO_PEER={host:'seu-servidor',port:9000,path:'/',secure:true,config:{iceServers:[...]}};</script>
+- Em algumas redes (4G de operadora, redes corporativas) a conexão direta pode falhar; nesse caso é preciso um servidor TURN.
+
+NOMES DOS JOGADORES
+- Na tela 2 JOGADORES, digite SEU NOME (até 12 caracteres). Ele fica salvo no navegador e aparece sobre a sua sonda, no HUD do parceiro, nas setas e nos avisos ("ANA CAIU", "ANA REVIVIDO"). Sem nome, usa J1/J2.
