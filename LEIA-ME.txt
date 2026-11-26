@@ -59,3 +59,15 @@ Como funciona (técnico)
 
 NOMES DOS JOGADORES
 - Na tela 2 JOGADORES, digite SEU NOME (até 12 caracteres). Ele fica salvo no navegador e aparece sobre a sua sonda, no HUD do parceiro, nas setas e nos avisos ("ANA CAIU", "ANA REVIVIDO"). Sem nome, usa J1/J2.
+
+CELULAR: ZOOM E DESEMPENHO
+- Zoom: em celular a câmera agora chega mais perto (a menor dimensão da tela mostra ~430 unidades), então sonda e criaturas ficam maiores e há menos coisas desenhadas por vez.
+- Qualidade gráfica (Ajustes > Simulação): AUTO (padrão), ALTA, MÉDIA, BAIXA.
+  AUTO mede o desempenho durante a partida: se o FPS cai, primeiro desliga efeitos de fundo, depois reduz a resolução do canvas e, por fim, reduz ainda mais os efeitos; o nível aprendido fica salvo no aparelho.
+  Em celular o AUTO já começa em resolução reduzida (1.5x em vez de 2x).
+- O gargalo era o preenchimento de pixels do canvas 2D (resolução alta + muitos brilhos sobrepostos), não a lógica do jogo.
+
+MIRA NO CELULAR (Ajustes > Simulação > Mira no celular)
+- MANUAL (padrão): a sonda só atira enquanto o analógico direito está em uso e mantém a última direção ao soltar.
+- AUTO: volta ao tiro automático na criatura mais próxima.
+- No PC (mouse) nada muda. No co-op vale para cada jogador no próprio aparelho.

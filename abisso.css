@@ -390,7 +390,7 @@ input[type=range]::-moz-range-thumb{width:15px;height:15px;border:1px solid rgba
 #touch.on{display:block}
 .zone{position:absolute;bottom:0;height:64%;width:46%;pointer-events:auto;touch-action:none}
 #zoneL{left:0}#zoneR{right:0}
-.stick{position:absolute;width:116px;height:116px;margin:-58px 0 0 -58px;border-radius:50%;pointer-events:none;opacity:0;transition:opacity .14s;
+.stick{position:absolute;width:116px;height:116px;margin:-58px 0 0 -58px;border-radius:50%;pointer-events:none;opacity:.55;transition:opacity .14s;
   border:2px solid rgba(25,200,216,.4);background:radial-gradient(circle,rgba(14,58,82,.42),rgba(2,7,13,.16) 70%)}
 .stick.on{opacity:1}
 .stick .knob{position:absolute;left:50%;top:50%;width:54px;height:54px;margin:-27px 0 0 -27px;border-radius:50%;
