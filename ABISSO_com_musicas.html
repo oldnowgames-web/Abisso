@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#02070d">
+<title>ABISSO — sobrevivência bioluminescente</title>
+<link rel="stylesheet" href="abisso.css">
+</head>
+<body>
+<div id="stage" data-scene="boot">
+  <canvas id="cv"></canvas>
+
+  <button id="audioChip" aria-label="Alternar som" aria-pressed="true">
+    <svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path id="chipWaves" d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg>
+    <span class="eq"><i></i><i></i><i></i></span>
+    <span id="chipLabel">SOM ATIVO</span>
+  </button>
+
+  <!-- ================= HUD ================= -->
+  <header class="hud" id="hud">
+    <div class="hud-l">
+      <div class="brand">
+        <svg viewBox="0 0 24 24"><path d="M4 11a8 8 0 0 1 16 0z" fill="#ff2e88" opacity=".85"/><path d="M7 12c0 3-1 4-1 6M11 12c0 3 1 5 1 7M15 12c0 3-1 4-1 6M19 12c0 2 1 4 1 5" stroke="#a855f7" stroke-width="1.4" fill="none" stroke-linecap="round"/><circle cx="9.5" cy="8" r="1.1" fill="#8dff45"/><circle cx="14.5" cy="8" r="1.1" fill="#8dff45"/></svg>
+        <b>ABISSO</b>
+      </div>
+      <div class="pips" id="pips"></div>
+      <div class="lives" id="lives" title="Vidas"></div>
+      <div class="partner" id="partner"></div>
+      <div class="meter" id="bloomMeter"><i id="bloomFill"></i><span id="bloomLabel">FLORADA · E</span></div>
+      <div class="dashrow">JATO<div class="dashbar"><i id="dashFill"></i></div></div>
+      <div class="buffs" id="buffRow"></div>
+    </div>
+    <div class="hud-c">
+      <div class="waveinfo" id="waveInfo">
+        <b id="waveNum">ONDA 01</b>
+        <div class="wname" id="waveName">ÁGUAS RASAS</div>
+        <div class="wavebar"><i id="waveFill"></i></div>
+        <small id="waveLeft">—</small>
+      </div>
+      <div class="bossinfo" id="bossInfo">
+        <b id="bossName">A RAINHA</b>
+        <div class="bossbar"><i id="bossFill"></i></div>
+        <small id="bossPhase">FASE I</small>
+      </div>
+    </div>
+    <div class="hud-r">
+      <div class="scorebox"><span class="lbl">PONTOS</span><b id="score">0</b><small id="bestHud">REC 0</small></div>
+      <div class="combo" id="comboBox"><b id="comboMult">×1.0</b><div class="combobar"><i id="comboFill"></i></div></div>
+      <div class="hudbtns">
+        <button class="ibtn bloom" id="btnBloom" title="Florada (E)" aria-label="Florada"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/></svg></button>
+        <button class="ibtn" id="btnSound" title="Som (M)" aria-label="Alternar som"><svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path id="soundWaves" d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg></button>
+        <button class="ibtn" id="btnPause" title="Pausar (Esc)" aria-label="Pausar"><svg viewBox="0 0 24 24"><path d="M9 5v14M15 5v14"/></svg></button>
+      </div>
+    </div>
+  </header>
+  <div id="depthGauge"><span class="dg-lb">PROFUNDIDADE</span></div>
+  <div id="banner"><div class="bnum" id="bannerNum"></div><div class="bname" id="bannerName"></div><div class="bsub" id="bannerSub"></div></div>
+  <div id="streak"><b id="streakName"></b><span id="streakSub"></span></div>
+  <div id="toast"></div>
+  <div id="hint"></div>
+
+  <!-- ================= TOUCH ================= -->
+  <div id="touch">
+    <div class="zone" id="zoneL"></div><div class="zone" id="zoneR"></div>
+    <div class="stick" id="stickL"><div class="knob"></div></div>
+    <div class="stick" id="stickR"><div class="knob"></div></div>
+    <div id="tBtns">
+      <button class="tbtn" id="tBloom" aria-label="Florada"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.5 5.5l2 2M16.5 16.5l2 2M18.5 5.5l-2 2M7.5 16.5l-2 2"/></svg>FLORADA</button>
+      <button class="tbtn" id="tDash" aria-label="Jato"><svg viewBox="0 0 24 24"><path d="M13 3L5 14h6l-1 7 8-11h-6z"/></svg>JATO</button>
+    </div>
+  </div>
+
+  <!-- ================= BOOT ================= -->
+  <section class="screen show" id="scBoot">
+    <div class="scrim"></div>
+    <div class="inner">
+      <div class="boot-mark">
+        <svg viewBox="0 0 24 24"><path d="M4 11a8 8 0 0 1 16 0z" fill="#ff2e88" opacity=".9"/><path d="M7 12c0 3-1 4-1 6M11 12c0 3 1 5 1 7M15 12c0 3-1 4-1 6M19 12c0 2 1 4 1 5" stroke="#a855f7" stroke-width="1.3" fill="none" stroke-linecap="round"/><circle cx="9.5" cy="8" r="1.1" fill="#8dff45"/><circle cx="14.5" cy="8" r="1.1" fill="#8dff45"/></svg>
+        <span>SONDA BIOLUMINESCENTE · LUMEN-07</span>
+      </div>
+      <h1 class="boot-title">ABISSO</h1>
+      <div class="boot-sub">FOSSA DE HADAL · SEM LUZ SOLAR</div>
+      <div class="boot-load">
+        <div class="boot-track"><i id="bootBar"></i></div>
+        <div class="boot-meta"><span id="bootLog">INICIANDO SISTEMAS</span><span id="bootPct">0%</span></div>
+      </div>
+      <button id="bootPrompt">TOQUE OU PRESSIONE QUALQUER TECLA</button>
+      <div class="boot-foot"><span>PROF. <b id="bootDepth">0</b> M</span></div>
+    </div>
+  </section>
+
+  <!-- ================= MENU ================= -->
+  <section class="screen" id="scMenu">
+    <div class="scrim"></div>
+    <div class="menu-grid scroll">
+      <div class="menu-left">
+        <div class="eyebrow">ESTAÇÃO DE MERGULHO · LUMEN-07</div>
+        <h1 class="menu-title">ABISSO</h1>
+        <p class="tagline menu-tag">A fossa acordou. Sua luz é a única arma — e o único alvo. <b>Doze ondas</b> até o fundo, dois chefes, quinze simbiontes.</p>
+        <nav class="nav" id="menuNav">
+          <button class="navitem act" data-nav="dive"><span class="idx">01</span><span class="txt"><b>MERGULHAR</b><span>iniciar descida</span></span><span class="arw">▸</span></button>
+          <button class="navitem" data-nav="coop"><span class="idx">02</span><span class="txt"><b>2 JOGADORES</b><span>cooperativo online</span></span><span class="arw">▸</span></button>
+          <button class="navitem" data-nav="howto"><span class="idx">03</span><span class="txt"><b>COMO JOGAR</b><span>guia interativo + treino</span></span><span class="arw">▸</span></button>
+          <button class="navitem" data-nav="bestiary"><span class="idx">04</span><span class="txt"><b>BESTIÁRIO</b><span>8 criaturas da fossa</span></span><span class="arw">▸</span></button>
+          <button class="navitem" data-nav="records"><span class="idx">05</span><span class="txt"><b>RECORDES</b><span>histórico de mergulhos</span></span><span class="arw">▸</span></button>
+          <button class="navitem" data-nav="settings"><span class="idx">06</span><span class="txt"><b>AJUSTES</b><span>áudio, efeitos, dificuldade</span></span><span class="arw">▸</span></button>
+        </nav>
+      </div>
+      <div class="menu-right">
+        <div class="brief scroll">
+          <div class="brief-head"><h2>BRIEFING DE MERGULHO</h2><p id="briefSeed">SETOR 07</p></div>
+          <div class="sect">MODO DE DESCIDA</div>
+          <div class="modes" id="modeCards">
+            <button class="mode sel" data-mode="campanha"><b>CAMPANHA</b><span>12 ondas · 2 chefes · final definido</span></button>
+            <button class="mode" data-mode="infinito"><b>INFINITO</b><span>sem fim · escala crescente</span></button>
+            <button class="mode" data-mode="treino"><b>TREINO</b><span>sem dano · tutorial guiado</span></button>
+          </div>
+          <div class="sect">PRESSÃO · DIFICULDADE</div>
+          <div class="diffs" id="diffCards">
+            <button class="diff" data-d="calmo"><b>CALMO</b><span>−20% inimigos<br>pontos ×0.8</span></button>
+            <button class="diff sel" data-d="normal"><b>NORMAL</b><span>equilíbrio da fossa<br>pontos ×1.0</span></button>
+            <button class="diff" data-d="abissal"><b>ABISSAL</b><span>+30% inimigos · +35% vida<br>pontos ×1.6</span></button>
+          </div>
+          <div class="sect">CONFIGURAÇÃO INICIAL DO LUMEN</div>
+          <div class="loadout">
+            <div class="lo"><span>CÉLULAS</span><b>6</b></div>
+            <div class="lo"><span>DANO</span><b>10</b></div>
+            <div class="lo"><span>CADÊNCIA</span><b>4.2/s</b></div>
+            <div class="lo"><span>JATO</span><b>1.15s</b></div>
+            <div class="lo"><span>FLORADA</span><b>100%</b></div>
+          </div>
+          <div class="recrow">
+            <div class="rec"><span>RECORDE</span><b id="menuBest">0</b></div>
+            <div class="rec"><span>MELHOR ONDA</span><b id="menuBestWave">0</b></div>
+            <div class="rec"><span>MERGULHOS</span><b id="menuRuns">0</b></div>
+          </div>
+          <div class="btnrow">
+            <button class="btn primary" id="btnDive">MERGULHAR ▸</button>
+            <button class="btn ghost" id="btnQuickHow">COMO JOGAR</button>
+          </div>
+          <div class="foot">Dica: o jato propulsor concede invulnerabilidade breve. A florada limpa a arena quando o plâncton carrega 100%.</div>
+        </div>
+      </div>
+    </div>
+    <div class="menu-foot"><span><b>↑ ↓</b> NAVEGAR</span><span><b>ENTER</b> SELECIONAR</span><span><b>ESC</b> VOLTAR</span><span><b>M</b> SOM</span></div>
+  </section>
+
+  <!-- ================= COMO JOGAR ================= -->
+  <section class="screen" id="scHowto">
+    <div class="scrim"></div>
+    <div class="inner">
+      <div class="sub-head">
+        <button class="back" data-back>◂ VOLTAR</button>
+        <h2>COMO <em>JOGAR</em></h2>
+        <span class="hint">DEMONSTRAÇÕES AO VIVO · MOTOR REAL DO JOGO</span>
+      </div>
+      <div class="sub-body scroll">
+        <div class="steps" id="howtoDots"></div>
+        <div class="howto-grid">
+          <div>
+            <div class="demo-frame">
+              <canvas id="howtoCanvas"></canvas>
+              <span class="tag" id="demoTag">DEMO</span>
+              <span class="live"><i></i>AO VIVO</span>
+            </div>
+            <div class="sect">REFERÊNCIA DE COMANDOS</div>
+            <div class="keys" id="howtoKeys"></div>
+          </div>
+          <div class="howto-text">
+            <h3 id="howtoTitle"></h3>
+            <p class="lead" id="howtoLead"></p>
+            <div class="points" id="howtoPoints"></div>
+            <div class="howto-nav">
+              <button class="btn ghost" id="howtoPrev">◂ ANTERIOR</button>
+              <button class="btn primary" id="howtoNext">PRÓXIMO ▸</button>
+              <button class="btn magenta" id="howtoTrain">MODO TREINO</button>
+              <span class="count" id="howtoCount"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= BESTIÁRIO ================= -->
+  <section class="screen" id="scBestiary">
+    <div class="scrim"></div>
+    <div class="inner">
+      <div class="sub-head">
+        <button class="back" data-back>◂ VOLTAR</button>
+        <h2>BESTIÁRIO <em>DA FOSSA</em></h2>
+        <span class="hint">ESPÉCIMES RENDERIZADOS EM TEMPO REAL</span>
+      </div>
+      <div class="sub-body scroll">
+        <div class="filters" id="beastFilters">
+          <button class="chipbtn on" data-f="all">TODOS · 8</button>
+          <button class="chipbtn" data-f="comum">COMUNS · 6</button>
+          <button class="chipbtn" data-f="chefe">CHEFES · 2</button>
+          <button class="chipbtn" data-f="seen">ENCONTRADOS</button>
+        </div>
+        <div class="beast-grid" id="beastGrid"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= RECORDES ================= -->
+  <section class="screen" id="scRecords">
+    <div class="scrim"></div>
+    <div class="inner">
+      <div class="sub-head">
+        <button class="back" data-back>◂ VOLTAR</button>
+        <h2>REGISTRO DE <em>MERGULHOS</em></h2>
+        <span class="hint">DADOS LOCAIS · NESTE NAVEGADOR</span>
+      </div>
+      <div class="sub-body scroll">
+        <div class="tiles" id="recTiles"></div>
+        <div class="sect">ALCANCE POR ONDA · QUANTOS MERGULHOS CHEGARAM A CADA UMA</div>
+        <div class="chart" id="recChart"></div>
+        <div class="sect">ÚLTIMOS MERGULHOS</div>
+        <div id="recTableWrap"></div>
+        <div class="btnrow">
+          <button class="btn danger" id="btnResetRec">APAGAR REGISTROS</button>
+          <span id="recConfirm"></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= AJUSTES ================= -->
+  <section class="screen" id="scSettings">
+    <div class="scrim"></div>
+    <div class="inner">
+      <div class="sub-head">
+        <button class="back" data-back>◂ VOLTAR</button>
+        <h2><em>AJUSTES</em></h2>
+        <span class="hint">APLICADOS IMEDIATAMENTE</span>
+      </div>
+      <div class="sub-body scroll">
+        <div class="set-grid">
+          <div class="set-card">
+            <h3>ÁUDIO</h3>
+            <div class="row"><div class="lb"><b>Volume geral</b><span>mestre de toda a saída</span></div><input type="range" id="setMaster" min="0" max="100"><span class="vv" id="vMaster"></span></div>
+            <div class="row"><div class="lb"><b>Música ambiente</b><span>pads e sonar da fossa</span></div><input type="range" id="setMusic" min="0" max="100"><span class="vv" id="vMusic"></span></div>
+            <div class="row"><div class="lb"><b>Efeitos sonoros</b><span>tiros, impactos, coletas</span></div><input type="range" id="setSfx" min="0" max="100"><span class="vv" id="vSfx"></span></div>
+            <div class="row"><div class="lb"><b>Silenciar tudo</b><span>atalho M em qualquer tela</span></div><button class="tgl" id="setMute" aria-label="Silenciar"><i></i></button></div>
+          </div>
+          <div class="set-card">
+            <h3>VISUAL E IMPACTO</h3>
+            <div class="row"><div class="lb"><b>Tremor de câmera</b><span>recuo visível nos impactos</span></div><input type="range" id="setShake" min="0" max="150"><span class="vv" id="vShake"></span></div>
+            <div class="row"><div class="lb"><b>Densidade de partículas</b><span>faíscas, plâncton, plumas</span></div><input type="range" id="setParts" min="20" max="160"><span class="vv" id="vParts"></span></div>
+            <div class="row"><div class="lb"><b>Brilho bioluminescente</b><span>intensidade do bloom</span></div><input type="range" id="setGlow" min="30" max="160"><span class="vv" id="vGlow"></span></div>
+            <div class="row"><div class="lb"><b>Alto contraste</b><span>inimigos e tiros mais legíveis</span></div><button class="tgl" id="setContrast" aria-label="Alto contraste"><i></i></button></div>
+            <div class="row"><div class="lb"><b>Movimento reduzido</b><span>sem tremor nem câmera lenta</span></div><button class="tgl" id="setMotion" aria-label="Movimento reduzido"><i></i></button></div>
+          </div>
+          <div class="set-card">
+            <h3>SIMULAÇÃO</h3>
+            <div class="row"><div class="lb"><b>Velocidade</b><span>ritmo do tempo de jogo</span></div>
+              <div class="seg" id="setSpeed"><button data-s="0.8">0.8×</button><button data-s="1" class="on">1×</button><button data-s="1.2">1.2×</button></div></div>
+            <div class="row"><div class="lb"><b>Dificuldade</b><span>pressão da fossa</span></div>
+              <div class="seg" id="setDiff"><button data-d="calmo">CALMO</button><button data-d="normal" class="on">NORMAL</button><button data-d="abissal">ABISSAL</button></div></div>
+            <div class="row"><div class="lb"><b>Indicadores de borda</b><span>setas para inimigos fora da tela</span></div><button class="tgl on" id="setArrows" aria-label="Indicadores"><i></i></button></div>
+            <div class="row"><div class="lb"><b>Restaurar padrões</b><span>volta todos os ajustes ao original</span></div><button class="btn ghost" id="btnDefaults" style="padding:10px 14px;font-size:10px">RESTAURAR</button></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= COOPERATIVO ONLINE ================= -->
+  <section class="screen" id="scCoop">
+    <div class="scrim"></div>
+    <div class="inner">
+      <div class="sub-head">
+        <button class="back" id="coopBack">◂ VOLTAR</button>
+        <h2>COOPERATIVO <em>ONLINE</em></h2>
+        <span class="hint">2 JOGADORES · ONLINE</span>
+      </div>
+      <div class="sub-body scroll">
+        <div class="coop-name">
+          <label for="coopName">SEU NOME</label>
+          <input class="coop-input small" id="coopName" type="text" maxlength="12" placeholder="Ex.: ARTHUR" autocomplete="off" spellcheck="false">
+        </div>
+        <div class="coop-grid">
+          <div class="coop-card">
+            <h3>CRIAR SALA</h3>
+            <p>Você será o <b>host</b>: o jogo roda no seu navegador e o parceiro entra pelo código.</p>
+            <button class="btn primary" id="coopCreate">CRIAR SALA ▸</button>
+            <div class="coop-codebox" id="coopCodeBox" style="display:none">
+              <span>CÓDIGO DA SALA</span>
+              <b id="coopCode">-----</b>
+              <button class="btn ghost" id="coopCopy">COPIAR</button>
+            </div>
+            <p class="coop-status" id="coopHostStatus">Crie uma sala e passe o código para o seu parceiro.</p>
+            <button class="btn ghost" id="coopCancel" style="display:none">CANCELAR</button>
+          </div>
+          <div class="coop-card">
+            <h3>ENTRAR NA SALA</h3>
+            <p>Digite o código de 5 letras que o host recebeu.</p>
+            <input class="coop-input" id="coopInput" type="text" maxlength="5" placeholder="CÓDIGO" autocomplete="off" autocapitalize="characters" spellcheck="false">
+            <button class="btn magenta" id="coopJoin">ENTRAR ▸</button>
+            <p class="coop-status" id="coopJoinStatus">Digite o código que o host recebeu.</p>
+          </div>
+        </div>
+        <div class="coop-lobby" id="coopLobby" style="display:none">
+          <div class="coop-ok"><span id="coopPeerName">PARCEIRO CONECTADO</span> <i id="coopPing"></i></div>
+          <button class="btn primary" id="coopStart" style="display:none">INICIAR MERGULHO ▸</button>
+          <p class="coop-wait" id="coopWaitHost" style="display:none">CONECTADO · AGUARDANDO O HOST INICIAR O MERGULHO…</p>
+        </div>
+        <p class="coop-info" id="coopInfo"></p>
+        <div class="coop-how">
+          <div class="sect">COMO FUNCIONA</div>
+          <ul>
+            <li><b>Mesma arena, mesmas ondas</b> — vocês enfrentam as criaturas juntos (mais inimigos e chefes mais resistentes).</li>
+            <li><b>3 vidas da dupla</b> — se um cair, o outro pode <b>reviver</b> ficando perto por 3 segundos. Se os dois caírem, perdem uma vida e a onda recomeça.</li>
+            <li><b>Melhorias individuais</b> — cada um escolhe o seu simbionte entre as ondas; a próxima onda começa quando os dois escolherem.</li>
+            <li><b>Plâncton, combo e florada são compartilhados</b> — qualquer um pode soltar a florada.</li>
+            <li>É preciso <b>internet</b>. Se a rede bloquear conexões diretas (alguns 4G ou redes de empresa), tente outra rede.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= MODAIS ================= -->
+  <section class="modal" id="scUpgrade">
+    <div class="scrim"></div>
+    <div class="sheet scroll">
+      <div class="up-head"><h2>ONDA LIMPA — <em>ESCOLHA UM SIMBIONTE</em></h2><p id="upSub">TECLAS 1 · 2 · 3</p></div>
+      <div class="cards" id="cards"></div>
+      <button class="btn ghost" id="btnReroll" style="display:block;margin:16px auto 0"></button>
+      <div class="up-bottom">
+        <div><div class="sect">FICHA DO LUMEN</div><div class="stats" id="statSheet"></div></div>
+        <div><div class="sect">SIMBIONTES ATIVOS</div><div class="chips" id="ownedChips"></div></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="coopmenu" id="coopMenu">
+    <div class="box">
+      <h3>PARTIDA COOPERATIVA</h3>
+      <p>O jogo continua rodando para o seu parceiro.</p>
+      <button class="btn primary" id="coopResume">CONTINUAR</button>
+      <button class="btn danger" id="coopLeave">SAIR DA PARTIDA</button>
+    </div>
+  </div>
+
+  <section class="modal" id="scPause">
+    <div class="scrim"></div>
+    <div class="sheet scroll" style="max-width:700px">
+      <div class="mid">
+        <div class="eyebrow">SISTEMAS EM ESPERA</div>
+        <h2>PAUSA</h2>
+        <div class="sub" id="pauseSub"></div>
+        <div class="grid-stats" id="pauseStats"></div>
+        <div class="sect" style="justify-content:center">VELOCIDADE DA SIMULAÇÃO</div>
+        <div class="seg" id="spd" style="display:inline-flex"><button data-s="0.8">LENTA 0.8×</button><button data-s="1" class="on">NORMAL 1×</button><button data-s="1.2">RÁPIDA 1.2×</button></div>
+        <div class="btnrow">
+          <button class="btn primary" id="btnResume">CONTINUAR ▸</button>
+          <button class="btn ghost" id="btnPauseHow">COMO JOGAR</button>
+          <button class="btn ghost" id="btnPauseSet">AJUSTES</button>
+          <button class="btn ghost" id="btnRestart">REINICIAR</button>
+          <button class="btn danger" id="btnQuit">MENU</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="modal" id="scOver">
+    <div class="scrim"></div>
+    <div class="sheet scroll" style="max-width:780px">
+      <div class="mid">
+        <div class="eyebrow">SINAL PERDIDO</div>
+        <h2 class="dead">A PRESSÃO VENCEU</h2>
+        <div class="sub" id="overSub"></div>
+        <div id="overRec"></div>
+        <div class="grid-stats" id="overStats"></div>
+        <div class="btnrow">
+          <button class="btn primary" id="btnAgain">MERGULHAR DE NOVO ▸</button>
+          <button class="btn ghost" id="btnOverHow">COMO JOGAR</button>
+          <button class="btn ghost" id="btnMenu">MENU</button>
+        </div>
+        <div class="foot" id="overTip"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="modal" id="scWin">
+    <div class="scrim"></div>
+    <div class="sheet scroll" style="max-width:780px">
+      <div class="mid">
+        <div class="eyebrow">FUNDO DA FOSSA ALCANÇADO</div>
+        <h2 class="win">VOCÊ ATRAVESSOU<br>O ABISSO</h2>
+        <div class="sub">O LEVIATÃ CAIU · A LUZ CONTINUA</div>
+        <div id="winRec"></div>
+        <div class="grid-stats" id="winStats"></div>
+        <div class="btnrow">
+          <button class="btn magenta" id="btnEndless">MODO INFINITO ∞</button>
+          <button class="btn primary" id="btnAgain2">JOGAR DE NOVO</button>
+          <button class="btn ghost" id="btnMenu2">MENU</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div id="dive"><div class="lines" id="diveLines"></div><div class="dd" id="diveDepth">0 m</div><div class="dl">DESCENDO</div></div>
+</div>
+
+<script src="vendor/peerjs.min.js" onerror="(function(){var s=document.createElement('script');s.src='https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js';document.head.appendChild(s);})()"></script>
+<script src="coop-net.js"></script>
+<script src="abisso.js"></script>
+</body>
+</html>
